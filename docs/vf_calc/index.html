@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SDVX 単曲FORCE</title>
+  <style>
+    :root{
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --fg:#0f172a;
+      --muted:#64748b;
+      --line:#e2e8f0;
+      --chip:#f1f5f9;
+      --thead:#f8fafc;
+      --shadow: 0 10px 30px rgba(15,23,42,.08);
+      --radius:16px;
+
+      /* medal theme */
+      --ef:#22c55e;   /* green */
+      --ex:#a855f7;   /* purple */
+      --mx:#64748b;   /* neutral */
+      --uc:#ec4899;   /* pink */
+      --puc:#facc15;  /* yellow */
+
+      /* class theme */
+      --c1:#b45309;
+      --c2:#2563eb;
+      --c3:#f59e0b;
+      --c4:#06b6d4;
+      --c5:#ef4444;
+      --c6:#fb7185;
+      --c7:#94a3b8;
+      --c8:#facc15;  /* 8★ yellow-ish */
+      --c9:#dc2626;
+      --c10:#7c3aed; /* 10★ purple-ish */
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans JP",sans-serif;
+      background: linear-gradient(180deg,var(--bg), #ffffff);
+      color:var(--fg);
+    }
+    .wrap{ max-width:1100px; margin:0 auto; padding:22px 16px 44px; }
+    header{
+      display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+      margin-bottom:12px;
+    }
+    h1{ font-size:18px; margin:0; letter-spacing:.2px; }
+    .small{ color:var(--muted); font-size:12px; }
+
+    .panel{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding:14px;
+      position: sticky;
+      top: 12px;
+      z-index: 10;
+      backdrop-filter: blur(6px);
+    }
+
+    .controls{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      align-items:end;
+    }
+    @media (max-width: 900px){
+      .controls{ grid-template-columns:1fr; }
+      .tables{ grid-template-columns:1fr; }
+    }
+
+    label{ display:block; color:var(--muted); font-size:12px; margin:0 0 6px; }
+    input, select{
+      width:100%;
+      background:#fff;
+      border:1px solid var(--line);
+      color:var(--fg);
+      border-radius:12px;
+      padding:10px 12px;
+      font-size:14px;
+      outline:none;
+      transition: box-shadow .12s, border-color .12s;
+    }
+    input:focus, select:focus{
+      border-color: #94a3b8;
+      box-shadow:0 0 0 3px rgba(148,163,184,.20);
+    }
+
+    .mono{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Noto Sans Mono", monospace;
+      font-variant-numeric: tabular-nums;
+    }
+    .badge{
+      display:inline-block;
+      padding:3px 9px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:var(--chip);
+      color:var(--muted);
+      font-size:12px;
+      line-height:1;
+      white-space:nowrap;
+    }
+
+    /* CLASS badge */
+    .classBadge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:3px 9px;
+      border-radius:999px;
+      font-size:12px;
+      line-height:1;
+      border:1px solid color-mix(in srgb, var(--line) 70%, transparent);
+      background: color-mix(in srgb, var(--chip) 70%, white);
+      color:var(--fg);
+      white-space:nowrap;
+    }
+    .classDot{
+      width:8px; height:8px; border-radius:999px;
+      background:#94a3b8;
+      box-shadow: 0 0 0 3px rgba(148,163,184,.18);
+      flex: 0 0 auto;
+    }
+
+    /* PUC card */
+    .pucCard{
+      margin-top:10px;
+      display:none;
+      border:1px solid color-mix(in srgb, var(--puc) 45%, var(--line));
+      background:
+        linear-gradient(180deg,
+          color-mix(in srgb, var(--puc) 22%, white),
+          rgba(255,255,255,0)
+        );
+      border-radius: 14px;
+      padding:12px;
+    }
+    .pucTopRow{
+      display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap;
+    }
+    .pucTitle{
+      font-weight:900;
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .pucDot{
+      width:10px; height:10px; border-radius:999px;
+      background: var(--puc);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--puc) 20%, transparent);
+    }
+    .pucValue{
+      font-weight:900;
+      font-size:18px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    /* tables layout */
+    .tables{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap:12px;
+    }
+    .sec{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      overflow:hidden;
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+    .sec::before{
+      content:"";
+      position:absolute;
+      left:0; top:0; bottom:0;
+      width:4px;
+      background: var(--line);
+    }
+
+    .secHead{
+      padding:12px 14px;
+      border-bottom:1px solid var(--line);
+      display:flex; justify-content:space-between; align-items:baseline; gap:10px;
+      background: var(--thead);
+    }
+    .secTitle{
+      font-weight:900;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .secMeta{
+      color:var(--muted);
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .dot{
+      width:10px; height:10px; border-radius:999px;
+      background:#94a3b8;
+      box-shadow: 0 0 0 4px rgba(148,163,184,.18);
+      flex: 0 0 auto;
+    }
+
+    table{ width:100%; border-collapse:collapse; }
+    thead th{
+      text-align:left;
+      padding:10px 12px;
+      font-size:12px;
+      color:var(--muted);
+      background:var(--thead);
+      border-bottom:1px solid var(--line);
+    }
+    tbody td{
+      padding:10px 12px;
+      border-bottom:1px solid var(--line);
+      font-size:13px;
+      vertical-align:middle;
+    }
+    tbody tr:nth-child(even){ background: rgba(15,23,42,.02); }
+    tbody tr:hover{ background: rgba(15,23,42,.04); }
+    tbody tr:last-child td{ border-bottom:none; }
+
+    .minTag{
+      color: var(--muted);
+      font-size:12px;
+      margin-left:8px;
+    }
+
+    /* Per-medal theming */
+    .sec[data-medal="EF"]::before{ background: var(--ef); }
+    .sec[data-medal="EF"] .dot{ background: var(--ef); box-shadow: 0 0 0 4px color-mix(in srgb, var(--ef) 20%, transparent); }
+    .sec[data-medal="EF"] .secHead{
+      background: linear-gradient(180deg, color-mix(in srgb, var(--ef) 14%, white), var(--thead));
+    }
+
+    .sec[data-medal="EX"]::before{ background: var(--ex); }
+    .sec[data-medal="EX"] .dot{ background: var(--ex); box-shadow: 0 0 0 4px color-mix(in srgb, var(--ex) 18%, transparent); }
+    .sec[data-medal="EX"] .secHead{
+      background: linear-gradient(180deg, color-mix(in srgb, var(--ex) 13%, white), var(--thead));
+    }
+
+    .sec[data-medal="MX"]::before{ background: #e5e7eb; }
+    .sec[data-medal="MX"] .dot{
+      background:#ffffff;
+      box-shadow: 0 0 0 1px #cbd5e1, 0 0 0 4px rgba(203,213,225,.25);
+    }
+    .sec[data-medal="MX"] .secHead{
+      background: linear-gradient(180deg, #ffffff, var(--thead));
+    }
+
+    .sec[data-medal="UC"]::before{ background: var(--uc); }
+    .sec[data-medal="UC"] .dot{ background: var(--uc); box-shadow: 0 0 0 4px color-mix(in srgb, var(--uc) 18%, transparent); }
+    .sec[data-medal="UC"] .secHead{
+      background: linear-gradient(180deg, color-mix(in srgb, var(--uc) 13%, white), var(--thead));
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>SDVX 単曲FORCE</h1>
+      <div class="small">Lv × GRADE → EF / EX / MX / UC</div>
+    </header>
+
+    <div class="panel">
+      <div class="controls">
+        <div>
+          <label for="lv">Lv</label>
+          <input id="lv" type="number" min="0" max="30" step="0.1" value="18.0" />
+        </div>
+        <div>
+          <label for="grade">GRADE</label>
+          <select id="grade"></select>
+        </div>
+      </div>
+
+      <div class="pucCard" id="pucCard" aria-live="polite">
+        <div class="pucTopRow">
+          <div class="pucTitle">
+            <span class="pucDot" aria-hidden="true"></span>
+            PUC <span class="badge">10,000,000 / ×1.10</span>
+          </div>
+          <div class="pucValue">
+            <span class="mono" id="pucForce">-</span>
+            <span id="pucClass"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tables" id="out"></div>
+  </div>
+
+<script>
+(() => {
+  // ---- coefficients ----
+  const GRADE_COEF_100 = { "S":105,"AAA+":102,"AAA":100,"AA+":97,"AA":94,"A+":91,"A":88,"B":85,"C":82,"D":80 };
+
+  const MEDALS = [
+    { key: "EF", label: "EF", coef100: 100 },
+    { key: "EX", label: "EX", coef100: 102 },
+    { key: "MX", label: "MX", coef100: 104 },
+    { key: "UC", label: "UC", coef100: 106 },
+  ];
+  const PUC_MEDAL_COEF_100 = 110;
+
+  const GRADE_RANGES_DESC = [
+    { grade: "S",    lo: 9900000, hi: 10000000 },
+    { grade: "AAA+", lo: 9800000, hi: 9899999 },
+    { grade: "AAA",  lo: 9700000, hi: 9799999 },
+    { grade: "AA+",  lo: 9500000, hi: 9699999 },
+    { grade: "AA",   lo: 9300000, hi: 9499999 },
+    { grade: "A+",   lo: 9000000, hi: 9299999 },
+    { grade: "A",    lo: 8700000, hi: 8999999 },
+    { grade: "B",    lo: 7500000, hi: 8699999 },
+    { grade: "C",    lo: 6500000, hi: 7499999 },
+    { grade: "D",    lo: 0,       hi: 6499999 },
+  ];
+
+  // ---- VOLFORCE CLASS tiers (avg thresholds) ----
+  const CLASS_TIERS = [
+    { cls:1, stars:1, avg:0,   sym:"☆" }, { cls:1, stars:2, avg:50,  sym:"☆" },
+    { cls:1, stars:3, avg:100, sym:"☆" }, { cls:1, stars:4, avg:150, sym:"☆" },
+
+    { cls:2, stars:1, avg:200, sym:"☆" }, { cls:2, stars:2, avg:210, sym:"☆" },
+    { cls:2, stars:3, avg:220, sym:"☆" }, { cls:2, stars:4, avg:230, sym:"☆" },
+
+    { cls:3, stars:1, avg:240, sym:"☆" }, { cls:3, stars:2, avg:250, sym:"☆" },
+    { cls:3, stars:3, avg:260, sym:"☆" }, { cls:3, stars:4, avg:270, sym:"☆" },
+
+    { cls:4, stars:1, avg:280, sym:"☆" }, { cls:4, stars:2, avg:285, sym:"☆" },
+    { cls:4, stars:3, avg:290, sym:"☆" }, { cls:4, stars:4, avg:295, sym:"☆" },
+
+    { cls:5, stars:1, avg:300, sym:"☆" }, { cls:5, stars:2, avg:305, sym:"☆" },
+    { cls:5, stars:3, avg:310, sym:"☆" }, { cls:5, stars:4, avg:315, sym:"☆" },
+
+    { cls:6, stars:1, avg:320, sym:"☆" }, { cls:6, stars:2, avg:325, sym:"☆" },
+    { cls:6, stars:3, avg:330, sym:"☆" }, { cls:6, stars:4, avg:335, sym:"☆" },
+
+    { cls:7, stars:1, avg:340, sym:"★" }, { cls:7, stars:2, avg:345, sym:"★" },
+    { cls:7, stars:3, avg:350, sym:"★" }, { cls:7, stars:4, avg:355, sym:"★" },
+
+    { cls:8, stars:1, avg:360, sym:"★" }, { cls:8, stars:2, avg:365, sym:"★" },
+    { cls:8, stars:3, avg:370, sym:"★" }, { cls:8, stars:4, avg:375, sym:"★" },
+
+    { cls:9, stars:1, avg:380, sym:"★" }, { cls:9, stars:2, avg:385, sym:"★" },
+    { cls:9, stars:3, avg:390, sym:"★" }, { cls:9, stars:4, avg:395, sym:"★" },
+
+    { cls:10, stars:1, avg:400, sym:"★" }, { cls:10, stars:2, avg:420, sym:"★" },
+    { cls:10, stars:3, avg:440, sym:"★" }, { cls:10, stars:4, avg:460, sym:"★" },
+  ].sort((a,b)=>a.avg-b.avg);
+
+  const CLASS_COLOR_VAR = (cls) => {
+    switch(cls){
+      case 1: return "var(--c1)";
+      case 2: return "var(--c2)";
+      case 3: return "var(--c3)";
+      case 4: return "var(--c4)";
+      case 5: return "var(--c5)";
+      case 6: return "var(--c6)";
+      case 7: return "var(--c7)";
+      case 8: return "var(--c8)";
+      case 9: return "var(--c9)";
+      case 10:return "var(--c10)";
+      default:return "#94a3b8";
+    }
+  };
+
+  function classTierForForce(force){
+    let best = null;
+    for(const t of CLASS_TIERS){
+      if (t.avg <= force) best = t;
+      else break;
+    }
+    return best;
+  }
+
+  function tierLabel(t){
+    if (!t) return "";
+    return `${t.cls}${t.sym.repeat(t.stars)}`;
+  }
+
+  function renderClassBadge(tier){
+    if (!tier) return "";
+    const label = tierLabel(tier);
+    const color = CLASS_COLOR_VAR(tier.cls);
+    return `
+      <span class="classBadge" title="VOLFORCE CLASS (平均値境界)">
+        <span class="classDot" style="background:${color}; box-shadow:0 0 0 3px color-mix(in srgb, ${color} 18%, transparent)"></span>
+        <span class="mono">${label}</span>
+      </span>
+    `;
+  }
+
+  // ---- BigInt calc ----
+  const BI = (n) => BigInt(n);
+  const TEN_POW_12 = BI(1_000_000_000_000);
+
+  function parseLv10(v){
+    const x = Number(v);
+    if (!Number.isFinite(x)) return null;
+    return Math.round(x * 10);
+  }
+
+  function forceInt(lv10, score, grade100, medal100){
+    const K = BI(lv10) * BI(grade100) * BI(medal100) * BI(20);
+    return Number((K * BI(score)) / TEN_POW_12);
+  }
+
+  function minScoreForForce(lv10, f, grade100, medal100){
+    const K = BI(lv10) * BI(grade100) * BI(medal100) * BI(20);
+    const target = BI(f) * TEN_POW_12;
+    return Number((target + K - BI(1)) / K);
+  }
+
+  function buildGradeSelect(){
+    const sel = document.getElementById("grade");
+    sel.innerHTML = "";
+    for (const r of GRADE_RANGES_DESC){
+      const opt = document.createElement("option");
+      opt.value = r.grade;
+      opt.textContent = `${r.grade}（${r.lo.toLocaleString("en-US")}～${r.hi.toLocaleString("en-US")}）`;
+      sel.appendChild(opt);
+    }
+    sel.value = "S";
+  }
+
+  function getRangeByGrade(g){
+    return GRADE_RANGES_DESC.find(x => x.grade === g) || null;
+  }
+
+  function calcRows(lv10, grade, medal){
+    const range = getRangeByGrade(grade);
+    const grade100 = GRADE_COEF_100[grade];
+    if (!range || !grade100) return { rows: [], fLo: 0, fHi: 0 };
+
+    const loScore = range.lo;
+    let hiScore = range.hi;
+    if (grade === "S" && hiScore === 10000000) hiScore = 9999999; // 10,000,000 is PUC-only
+
+    const fLo = forceInt(lv10, loScore, grade100, medal.coef100);
+    const fHi = forceInt(lv10, hiScore, grade100, medal.coef100);
+
+    const rows = [];
+    rows.push({ score: loScore, force: fLo, kind: "lower" });
+
+    for (let f = fLo; f <= fHi; f++){
+      const ms = minScoreForForce(lv10, f, grade100, medal.coef100);
+      if (ms < loScore) continue;
+      if (ms > hiScore) break;
+      if (ms === loScore) continue;
+      rows.push({ score: ms, force: f, kind: "min" });
+    }
+
+    rows.sort((a,b) => a.score - b.score || a.force - b.force);
+    return { rows, fLo, fHi };
+  }
+
+  function renderPUC(lv10, grade){
+    const card = document.getElementById("pucCard");
+    const span = document.getElementById("pucForce");
+    const cls = document.getElementById("pucClass");
+
+    if (grade !== "S"){
+      card.style.display = "none";
+      span.textContent = "-";
+      cls.innerHTML = "";
+      return;
+    }
+    const score = 10_000_000;
+    const f = forceInt(lv10, score, GRADE_COEF_100["S"], PUC_MEDAL_COEF_100);
+    span.textContent = String(f);
+
+    const tier = classTierForForce(f);
+    cls.innerHTML = renderClassBadge(tier);
+
+    card.style.display = "block";
+  }
+
+  function renderAll(){
+    const lv10 = parseLv10(document.getElementById("lv").value);
+    const grade = document.getElementById("grade").value;
+    const out = document.getElementById("out");
+    out.innerHTML = "";
+    if (lv10 == null || lv10 < 0) { renderPUC(0, "D"); return; }
+
+    renderPUC(lv10, grade);
+
+    for (const medal of MEDALS){
+      const { rows, fLo, fHi } = calcRows(lv10, grade, medal);
+
+      const sec = document.createElement("div");
+      sec.className = "sec";
+      sec.dataset.medal = medal.key;
+
+      const head = document.createElement("div");
+      head.className = "secHead";
+      head.innerHTML = `
+        <div class="secTitle">
+          <span class="dot" aria-hidden="true"></span>${medal.label}
+          <span class="badge">×${(medal.coef100/100).toFixed(2)}</span>
+        </div>
+        <div class="secMeta">${fLo}–${fHi}</div>
+      `;
+      sec.appendChild(head);
+
+      const table = document.createElement("table");
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th style="width:44%">Score</th>
+            <th style="width:20%">Force</th>
+            <th>CLASS</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      `;
+      const tb = table.querySelector("tbody");
+
+      let prevTierLabel = null;
+
+      for (const r of rows){
+        const tier = classTierForForce(r.force);
+        const curLabel = tierLabel(tier);
+
+        // show CLASS only when it changes (or first row)
+        const showClass = (prevTierLabel === null) || (curLabel !== prevTierLabel);
+        prevTierLabel = curLabel;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="mono">
+            ${r.score}
+            ${r.kind === "lower" ? `<span class="minTag">min</span>` : ``}
+          </td>
+          <td class="mono">${r.force}</td>
+          <td>${showClass ? renderClassBadge(tier) : ""}</td>
+        `;
+        tb.appendChild(tr);
+      }
+
+      sec.appendChild(table);
+      out.appendChild(sec);
+    }
+  }
+
+  // init + realtime
+  buildGradeSelect();
+  document.getElementById("lv").value = "18.0";
+  document.getElementById("grade").value = "S";
+  document.getElementById("lv").addEventListener("input", renderAll);
+  document.getElementById("grade").addEventListener("change", renderAll);
+  renderAll();
+})();
+</script>
+</body>
+</html>
