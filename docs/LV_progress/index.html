@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Linked VERSE in progress</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --sub: #6b7280;
+      --line: #d1d5db;
+      --accent: #2563eb;
+      --accent-soft: #dbeafe;
+      --accent-border: #93c5fd;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .wrap {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    h1 {
+      margin: 0 0 16px;
+      font-size: 28px;
+    }
+
+    .panel, .chart-card {
+      background: var(--card);
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+    }
+
+    .panel { margin-bottom: 20px; }
+
+    .controls-head {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .controls-left {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .extra-options {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #eef0f3;
+    }
+
+    .toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--text);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .toggle input { margin: 0; }
+
+    button {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button:hover { background: #f9fafb; }
+
+    .status {
+      color: var(--sub);
+      font-size: 14px;
+    }
+
+    .checkbox-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      border: 1px solid var(--item-stroke, #e5e7eb);
+      border-left: 6px solid var(--item-stroke, #e5e7eb);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: var(--item-fill, #fcfcfd);
+    }
+
+    .checkbox-item input { margin-top: 3px; }
+
+    .checkbox-label {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .checkbox-label strong {
+      font-size: 14px;
+      word-break: break-word;
+      font-weight: 700;
+    }
+
+    .checkbox-label span {
+      font-size: 13px;
+      color: var(--sub);
+      word-break: break-word;
+    }
+
+    .chart-card h2 {
+      margin: 0 0 12px;
+      font-size: 20px;
+    }
+
+    .chart-card p {
+      margin: 0 0 14px;
+      color: var(--sub);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .canvas-wrap {
+      position: relative;
+      width: 100%;
+      min-height: 460px;
+    }
+
+    .empty {
+      padding: 30px 16px;
+      text-align: center;
+      color: var(--sub);
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      background: #fafafa;
+    }
+
+    .tab-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .tab-button {
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-weight: 700;
+      background: #fff;
+      border: 1px solid #dbe3ee;
+    }
+
+    .tab-button.active {
+      background: var(--accent-soft);
+      border-color: var(--accent-border);
+      color: #1d4ed8;
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .info-list {
+      margin: 0;
+      padding-left: 1.3em;
+      line-height: 1.8;
+    }
+
+    .info-list ul {
+      margin-top: 8px;
+      padding-left: 1.3em;
+    }
+
+    .animation-controls {
+      display: grid;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .control-row {
+      display: grid;
+      gap: 8px;
+    }
+
+    .control-row label {
+      font-size: 14px;
+      color: var(--sub);
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .control-row input[type="range"],
+    .control-row select {
+      width: 100%;
+    }
+
+    .control-row select {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 14px;
+    }
+
+    .time-display {
+      display: grid;
+      gap: 4px;
+      padding: 12px 14px;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      background: #fbfdff;
+      margin-bottom: 14px;
+    }
+
+    .time-display .main {
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .time-display .sub {
+      font-size: 13px;
+      color: var(--sub);
+    }
+
+    .player-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .animation-grid {
+      display: grid;
+      grid-template-columns: minmax(300px, 1fr) minmax(380px, 1.35fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .ranking-list {
+      display: grid;
+      gap: 10px;
+      min-height: 460px;
+    }
+
+    .ranking-item {
+      display: grid;
+      gap: 6px;
+      padding: 10px 12px;
+      border: 1px solid var(--item-stroke, #edf1f5);
+      border-left: 6px solid var(--item-stroke, #edf1f5);
+      border-radius: 12px;
+      background: var(--item-fill, #fcfcfd);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .ranking-item:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+    }
+
+    .ranking-head {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 10px;
+      align-items: center;
+      font-size: 14px;
+    }
+
+    .rank-num {
+      font-weight: 700;
+      color: var(--sub);
+      min-width: 2.5em;
+    }
+
+    .rank-label {
+      font-weight: 700;
+      min-width: 0;
+      word-break: break-word;
+    }
+
+    .rank-value {
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+    }
+
+    .bar-outer {
+      width: 100%;
+      height: 14px;
+      border-radius: 999px;
+      background: #eef2f7;
+      overflow: hidden;
+    }
+
+    .bar-inner {
+      height: 100%;
+      border-radius: 999px;
+      min-width: 2px;
+      transition: width 0.12s linear;
+    }
+
+    @media (max-width: 1000px) {
+      .animation-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Linked VERSE in progress</h1>
+
+    <section class="panel">
+      <div class="controls-head">
+        <div class="controls-left">
+          <button id="reloadButton" type="button">再読み込み</button>
+          <button id="selectAllButton" type="button">すべて選択</button>
+          <button id="clearButton" type="button">すべて解除</button>
+        </div>
+        <div id="status" class="status">読み込み前</div>
+      </div>
+
+      <div class="extra-options">
+        <label class="toggle">
+          <input id="showAverageCheckbox" type="checkbox" checked>
+          <span>平均を追加</span>
+        </label>
+        <label class="toggle">
+          <input id="averageOnlyCheckbox" type="checkbox">
+          <span>平均のみ表示</span>
+        </label>
+      </div>
+
+      <div id="checkboxList" class="checkbox-list"></div>
+    </section>
+
+    <div class="tab-bar">
+      <button class="tab-button active" type="button" data-tab="info">説明</button>
+      <button class="tab-button" type="button" data-tab="cumulative">累積表示</button>
+      <button class="tab-button" type="button" data-tab="hourly">1時間ごと表示</button>
+      <button class="tab-button" type="button" data-tab="animation">動画表示</button>
+    </div>
+
+    <section id="tab-info" class="tab-panel active chart-card">
+      <h2>説明</h2>
+      <ul class="info-list">
+        <li>選択した GATE にて、解禁に成功した「開始からの累積人数」と「1時間ごとの人数」を描画します。日付境界は強調線で表示します。</li>
+        <li>描画には、 500 位までが含まれるクリア順ランキングをデータ化したものを利用しています。以下の点に留意してください。
+          <ul>
+            <li>1日目の深夜など、クリアが不可能な時間帯についても省略せず描画しています。</li>
+            <li>501 番目以降のクリアは考慮されていません。そのため、主に 2 日目以降について、クリア人数が少ないように見える場合があります。</li>
+            <li>Link LEVEL 緩和前のクリア人数が 500 人に達しておらず、緩和の影響を受けることがあります。以下の GATE が該当します。</li>
+            <ul>
+              <li>PARADISE(創 -汝ら新世界へ歩む者なり-)</li>
+            </ul>
+          </ul>
+        </li>
+      </ul>
+    </section>
+
+    <section id="tab-cumulative" class="tab-panel chart-card">
+      <h2>累積人数</h2>
+      <p>横軸は <strong>経過時間</strong>、縦軸はその時点までの <strong>累積人数</strong> です。</p>
+      <div class="canvas-wrap">
+        <canvas id="cumulativeChart"></canvas>
+      </div>
+    </section>
+
+    <section id="tab-hourly" class="tab-panel chart-card">
+      <h2>1時間ごとの人数</h2>
+      <p>横軸は <strong>経過時間</strong>、縦軸はその 1 時間区間に含まれる <strong>人数</strong> です。</p>
+      <div class="canvas-wrap">
+        <canvas id="hourlyChart"></canvas>
+      </div>
+    </section>
+
+    <section id="tab-animation" class="tab-panel chart-card">
+      <h2>動画表示</h2>
+      <p>左に現在時点の累積人数ゲージ、右に現在時点まで伸びる累積人数グラフを表示します。</p>
+
+      <div class="animation-controls">
+        <div class="control-row">
+          <label for="timeSlider">
+            <span>時間</span>
+            <span id="timeSliderValue">0分</span>
+          </label>
+          <input id="timeSlider" type="range" min="0" max="0" step="1" value="0" />
+        </div>
+
+        <div class="control-row">
+          <label for="speedSlider">
+            <span>速度</span>
+            <span id="speedSliderValue">1.0 倍速</span>
+          </label>
+          <input id="speedSlider" type="range" min="-20" max="24" step="1" value="0" />
+        </div>
+
+        <div class="control-row">
+          <label for="gaugeModeSelect">
+            <span>ゲージの基準</span>
+          </label>
+          <select id="gaugeModeSelect">
+            <option value="relative">現在の最大値を満タンとする</option>
+            <option value="fixed500">500人を満タンとする</option>
+          </select>
+        </div>
+
+        <div class="control-row">
+          <label for="timeModeSelect">
+            <span>時間の動き方</span>
+          </label>
+          <select id="timeModeSelect">
+            <option value="continuous">一定速度で進める</option>
+            <option value="event">イベント発生ごとに進める</option>
+          </select>
+        </div>
+
+        <div class="player-buttons">
+          <button id="playPauseButton" type="button">再生</button>
+          <button id="resetTimeButton" type="button">先頭に戻る</button>
+        </div>
+      </div>
+
+      <div class="time-display">
+        <div id="currentTimeText" class="main">1日目0時0分</div>
+        <div id="currentTimeSub" class="sub">開始から 0分</div>
+      </div>
+
+      <div class="animation-grid">
+        <section class="chart-card" style="margin:0; box-shadow:none;">
+          <h2 style="font-size:18px;">現在時点の累積人数ゲージ</h2>
+          <div id="rankingList" class="ranking-list"></div>
+        </section>
+
+        <section class="chart-card" style="margin:0; box-shadow:none;">
+          <h2 style="font-size:18px;">動画中の累積人数</h2>
+          <div class="canvas-wrap">
+            <canvas id="animatedCumulativeChart"></canvas>
+          </div>
+        </section>
+      </div>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+  <script>
+    Chart.register(window["chartjs-plugin-annotation"]);
+
+    const INDEX_PATH = "json/index.json";
+    const HOUR_MS = 60 * 60 * 1000;
+    const MINUTE_MS = 60 * 1000;
+    const DAY_MS = 24 * HOUR_MS;
+
+    const checkboxList = document.getElementById("checkboxList");
+    const statusEl = document.getElementById("status");
+    const reloadButton = document.getElementById("reloadButton");
+    const selectAllButton = document.getElementById("selectAllButton");
+    const clearButton = document.getElementById("clearButton");
+    const showAverageCheckbox = document.getElementById("showAverageCheckbox");
+    const averageOnlyCheckbox = document.getElementById("averageOnlyCheckbox");
+    const timeSlider = document.getElementById("timeSlider");
+    const timeSliderValue = document.getElementById("timeSliderValue");
+    const speedSlider = document.getElementById("speedSlider");
+    const speedSliderValue = document.getElementById("speedSliderValue");
+    const playPauseButton = document.getElementById("playPauseButton");
+    const resetTimeButton = document.getElementById("resetTimeButton");
+    const gaugeModeSelect = document.getElementById("gaugeModeSelect");
+    const timeModeSelect = document.getElementById("timeModeSelect");
+    const currentTimeText = document.getElementById("currentTimeText");
+    const currentTimeSub = document.getElementById("currentTimeSub");
+    const rankingList = document.getElementById("rankingList");
+    const tabButtons = Array.from(document.querySelectorAll(".tab-button"));
+    const tabPanels = Array.from(document.querySelectorAll(".tab-panel"));
+
+    let loadedItems = [];
+    let cumulativeChart = null;
+    let hourlyChart = null;
+    let animatedCumulativeChart = null;
+    let currentAnimatedDatasets = [];
+    let animationCurrentMinute = 0;
+    let animationEventTimeline = [0];
+    let animationTotalFrames = 1;
+    let animationEventAccumulator = 0;
+    let isPlaying = false;
+    let lastFrameTs = null;
+    let animationFrameId = null;
+
+    function setStatus(text) {
+      statusEl.textContent = text;
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function formatLegendLabel(data) {
+      return `${data.gate}(${data.song})`;
+    }
+
+    function parseIndexEntry(entry) {
+      if (typeof entry === "string") return { file: entry, title: entry };
+      if (entry && typeof entry === "object") {
+        const file = entry.file ?? entry.path ?? entry.filename ?? entry.name;
+        if (!file || typeof file !== "string") {
+          throw new Error("index.json 内のオブジェクトに file/path/filename/name がありません。");
+        }
+        return { file, title: entry.title ?? file };
+      }
+      throw new Error("index.json の要素形式が不正です。文字列またはオブジェクトを使ってください。");
+    }
+
+    async function fetchJson(path) {
+      const res = await fetch(path, { cache: "no-store" });
+      if (!res.ok) {
+        throw new Error(`${path} の読み込みに失敗しました (${res.status})`);
+      }
+      return await res.json();
+    }
+
+    function formatStartDateOnly(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function formatElapsedFull(hourValue) {
+      const totalHours = Math.round(Number(hourValue));
+      const day = Math.floor(totalHours / 24) + 1;
+      const hour = ((totalHours % 24) + 24) % 24;
+      return `${day}日目${hour}時`;
+    }
+
+    function formatElapsedPrecise(hourValue) {
+      const totalMinutes = Math.round(Number(hourValue) * 60);
+      return formatElapsedPreciseMinutes(totalMinutes);
+    }
+
+    function formatElapsedPreciseMinutes(totalMinutes) {
+      const safe = Math.max(0, Math.round(Number(totalMinutes) || 0));
+      const day = Math.floor(safe / (24 * 60)) + 1;
+      const remain = safe % (24 * 60);
+      const hour = Math.floor(remain / 60);
+      const minute = remain % 60;
+      return `${day}日目${hour}時${minute}分`;
+    }
+
+    function formatTickLabel(hourValue) {
+      const totalHours = Math.round(Number(hourValue));
+      const hour = ((totalHours % 24) + 24) % 24;
+      if (hour === 0) {
+        const day = Math.floor(totalHours / 24) + 1;
+        return `${day}日目0時`;
+      }
+      return `${hour}時`;
+    }
+
+    function clamp(value, min, max) {
+      return Math.min(Math.max(value, min), max);
+    }
+
+    function parseHexColor(hex) {
+      const m = String(hex || "").trim().match(/^#([0-9a-fA-F]{6})$/);
+      if (!m) return null;
+      const raw = m[1];
+      return {
+        r: parseInt(raw.slice(0, 2), 16),
+        g: parseInt(raw.slice(2, 4), 16),
+        b: parseInt(raw.slice(4, 6), 16)
+      };
+    }
+
+    function rgbaFromRgb(rgb, alpha) {
+      return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
+    }
+
+
+    function getColorByIndex(index, isAverage = false) {
+      if (isAverage) {
+        return {
+          stroke: "rgb(75, 85, 99)",
+          fill: "rgba(107, 114, 128, 0.16)",
+          panelFill: "rgba(107, 114, 128, 0.08)",
+          bar: "linear-gradient(90deg, rgba(75,85,99,0.92), rgba(156,163,175,0.82))"
+        };
+      }
+      const hue = (index * 57) % 360;
+      return {
+        stroke: `hsl(${hue} 70% 45%)`,
+        fill: `hsla(${hue} 70% 45% / 0.18)`,
+        panelFill: `hsla(${hue} 70% 45% / 0.08)`,
+        bar: `linear-gradient(90deg, hsla(${hue} 70% 45% / 0.95), hsla(${(hue + 24) % 360} 75% 58% / 0.9))`
+      };
+    }
+
+    function buildColorTheme(colorCode, fallbackIndex, isAverage = false) {
+      if (isAverage) return getColorByIndex(fallbackIndex, true);
+      const rgb = parseHexColor(colorCode);
+      if (!rgb) return getColorByIndex(fallbackIndex, false);
+      return {
+        stroke: `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`,
+        fill: rgbaFromRgb(rgb, 0.18),
+        panelFill: rgbaFromRgb(rgb, 0.08),
+        bar: `linear-gradient(90deg, ${rgbaFromRgb(rgb, 0.95)}, ${rgbaFromRgb(rgb, 0.72)})`
+      };
+    }
+
+    function buildCheckboxes(items) {
+      if (items.length === 0) {
+        checkboxList.innerHTML = '<div class="empty">選択可能な GATE がありません。</div>';
+        return;
+      }
+      checkboxList.innerHTML = items.map((item, idx) => {
+        const checked = idx === 0 ? "checked" : "";
+        return `
+          <label class="checkbox-item" style="--item-stroke:${escapeHtml(item.color.stroke)}; --item-fill:${escapeHtml(item.color.panelFill)};">
+            <input type="checkbox" class="json-checkbox" value="${escapeHtml(item.file)}" ${checked}>
+            <div class="checkbox-label">
+              <strong>${escapeHtml(item.gate)}</strong>
+              <span>${escapeHtml(item.song)}</span>
+              <span>${escapeHtml(item.startDateLabel)}</span>
+            </div>
+          </label>
+        `;
+      }).join("");
+    }
+
+    function getSelectedItems() {
+      const checked = Array.from(document.querySelectorAll(".json-checkbox:checked")).map(el => el.value);
+      return loadedItems.filter(item => checked.includes(item.file));
+    }
+
+    function getElapsedHours(dateMs, startMs) {
+      return (dateMs - startMs) / HOUR_MS;
+    }
+
+    function getElapsedMinutes(dateMs, startMs) {
+      return Math.floor((dateMs - startMs) / MINUTE_MS);
+    }
+
+    function getNextMidnightMs(startDate) {
+      const next = new Date(startDate);
+      next.setHours(24, 0, 0, 0);
+      return next.getTime();
+    }
+
+    function buildDayBoundaryHours(startDate, lastTimestampDate) {
+      const startMs = startDate.getTime();
+      const lastMs = lastTimestampDate.getTime();
+      if (!Number.isFinite(startMs) || !Number.isFinite(lastMs) || lastMs < startMs) return [];
+      const result = [];
+      let boundaryMs = getNextMidnightMs(startDate);
+      while (boundaryMs <= lastMs) {
+        result.push((boundaryMs - startMs) / HOUR_MS);
+        boundaryMs += DAY_MS;
+      }
+      return result;
+    }
+
+    function buildDayBoundaryMinutes(startDate, lastTimestampDate) {
+      const startMs = startDate.getTime();
+      const lastMs = lastTimestampDate.getTime();
+      if (!Number.isFinite(startMs) || !Number.isFinite(lastMs) || lastMs < startMs) return [];
+      const result = [];
+      let boundaryMs = getNextMidnightMs(startDate);
+      while (boundaryMs <= lastMs) {
+        result.push(Math.round((boundaryMs - startMs) / MINUTE_MS));
+        boundaryMs += DAY_MS;
+      }
+      return result;
+    }
+
+    function buildCumulativeDataset(item) {
+      const startMs = item.startDate.getTime();
+      const eventMs = item.timestamps
+        .map(ts => ts.getTime())
+        .filter(ms => Number.isFinite(ms) && ms >= startMs)
+        .sort((a, b) => a - b);
+
+      const points = [{ x: 0, y: 0 }];
+      eventMs.forEach((ms, idx) => {
+        points.push({ x: getElapsedHours(ms, startMs), y: idx + 1 });
+      });
+
+      const lastDate = item.timestamps.length > 0 ? item.timestamps.reduce((a, b) => (a > b ? a : b)) : item.startDate;
+      return {
+        id: item.file,
+        label: item.label,
+        data: points,
+        dayBoundaryHours: buildDayBoundaryHours(item.startDate, lastDate),
+        color: item.color,
+        isAverage: false
+      };
+    }
+
+    function buildHourlyDataset(item) {
+      const startMs = item.startDate.getTime();
+      const counts = new Map();
+      let maxHourIndex = 0;
+      let lastDate = item.startDate;
+
+      for (const ts of item.timestamps) {
+        const ms = ts.getTime();
+        if (!Number.isFinite(ms) || ms < startMs) continue;
+        const hourIndex = Math.floor((ms - startMs) / HOUR_MS);
+        counts.set(hourIndex, (counts.get(hourIndex) || 0) + 1);
+        if (hourIndex > maxHourIndex) maxHourIndex = hourIndex;
+        if (ts > lastDate) lastDate = ts;
+      }
+
+      const data = [];
+      for (let h = 0; h <= maxHourIndex; h++) {
+        data.push({ x: h, y: counts.get(h) || 0 });
+      }
+
+      return {
+        id: item.file,
+        label: item.label,
+        data,
+        maxHourIndex,
+        dayBoundaryHours: buildDayBoundaryHours(item.startDate, lastDate),
+        color: item.color,
+        isAverage: false
+      };
+    }
+
+    function extractFileOrder(fileName) {
+      const m = String(fileName || "").match(/(\d+)/);
+      return m ? Number(m[1]) : Number.MAX_SAFE_INTEGER;
+    }
+
+    function buildAnimatedSeries(item) {
+      const startMs = item.startDate.getTime();
+      const eventMinutes = item.timestamps
+        .map(ts => ts.getTime())
+        .filter(ms => Number.isFinite(ms) && ms >= startMs)
+        .sort((a, b) => a - b)
+        .map(ms => getElapsedMinutes(ms, startMs));
+
+      const lastDate = item.timestamps.length > 0 ? item.timestamps.reduce((a, b) => (a > b ? a : b)) : item.startDate;
+      const pointsMinutes = [{ x: 0, y: 0 }];
+      eventMinutes.forEach((minute, idx) => pointsMinutes.push({ x: minute, y: idx + 1 }));
+
+      return {
+        id: item.file,
+        label: item.label,
+        color: item.color,
+        isAverage: false,
+        order: item.order,
+        eventMinutes,
+        totalCount: eventMinutes.length,
+        maxMinute: Math.max(0, eventMinutes.length ? eventMinutes[eventMinutes.length - 1] : 0),
+        dayBoundaryMinutes: buildDayBoundaryMinutes(item.startDate, lastDate),
+        pointsMinutes
+      };
+    }
+
+    function buildAverageCumulativeDataset(datasets, label) {
+      if (!datasets.length) return null;
+      const xSet = new Set([0]);
+      for (const ds of datasets) for (const p of ds.data) xSet.add(p.x);
+      const xs = Array.from(xSet).sort((a, b) => a - b);
+      const avgData = xs.map(x => {
+        let sum = 0;
+        for (const ds of datasets) {
+          let value = 0;
+          for (const p of ds.data) {
+            if (p.x <= x) value = p.y;
+            else break;
+          }
+          sum += value;
+        }
+        return { x, y: sum / datasets.length };
+      });
+      const mergedBoundarySet = new Set();
+      for (const ds of datasets) for (const x of ds.dayBoundaryHours || []) mergedBoundarySet.add(x);
+      return {
+        id: "__average__",
+        label,
+        data: avgData,
+        dayBoundaryHours: Array.from(mergedBoundarySet).sort((a, b) => a - b),
+        isAverage: true,
+        order: Number.MAX_SAFE_INTEGER,
+        color: getColorByIndex(0, true)
+      };
+    }
+
+    function buildAverageHourlyDataset(datasets, label) {
+      if (!datasets.length) return null;
+      const maxX = datasets.reduce((acc, ds) => Math.max(acc, ds.data.length ? ds.data[ds.data.length - 1].x : 0), 0);
+      const avgData = [];
+      for (let x = 0; x <= maxX; x++) {
+        let sum = 0;
+        for (const ds of datasets) sum += (ds.data[x] ? ds.data[x].y : 0);
+        avgData.push({ x, y: sum / datasets.length });
+      }
+      const mergedBoundarySet = new Set();
+      for (const ds of datasets) for (const x of ds.dayBoundaryHours || []) mergedBoundarySet.add(x);
+      return {
+        id: "__average__",
+        label,
+        data: avgData,
+        dayBoundaryHours: Array.from(mergedBoundarySet).sort((a, b) => a - b),
+        isAverage: true,
+        order: Number.MAX_SAFE_INTEGER,
+        color: getColorByIndex(0, true)
+      };
+    }
+
+    function getSeriesCountAtMinute(series, minute) {
+      if (series.isAverage) {
+        const pts = series.pointsMinutes;
+        let l = 0, r = pts.length;
+        while (l < r) {
+          const m = (l + r) >> 1;
+          if (pts[m].x <= minute) l = m + 1;
+          else r = m;
+        }
+        return l === 0 ? 0 : pts[l - 1].y;
+      }
+      let l = 0, r = series.eventMinutes.length;
+      while (l < r) {
+        const m = (l + r) >> 1;
+        if (series.eventMinutes[m] <= minute) l = m + 1;
+        else r = m;
+      }
+      return l;
+    }
+
+    function buildAverageAnimatedSeries(datasets, label) {
+      if (!datasets.length) return null;
+      const maxMinute = datasets.reduce((acc, ds) => Math.max(acc, ds.maxMinute || 0), 0);
+      const avgData = [];
+      for (let minute = 0; minute <= maxMinute; minute++) {
+        let sum = 0;
+        for (const ds of datasets) sum += getSeriesCountAtMinute(ds, minute);
+        avgData.push({ x: minute, y: sum / datasets.length });
+      }
+      const mergedBoundarySet = new Set();
+      for (const ds of datasets) for (const x of ds.dayBoundaryMinutes || []) mergedBoundarySet.add(x);
+      return {
+        id: "__average__",
+        label,
+        color: getColorByIndex(0, true),
+        isAverage: true,
+        order: Number.MAX_SAFE_INTEGER,
+        maxMinute,
+        dayBoundaryMinutes: Array.from(mergedBoundarySet).sort((a, b) => a - b),
+        pointsMinutes: avgData
+      };
+    }
+
+    function buildDisplayDatasets(baseDatasets, averageLabel, averageBuilder) {
+      const showAverage = showAverageCheckbox.checked;
+      const averageOnly = averageOnlyCheckbox.checked;
+      const averageDataset = averageBuilder(baseDatasets, averageLabel);
+      if (averageOnly) return averageDataset ? [averageDataset] : [];
+      if (showAverage && averageDataset) return [...baseDatasets, averageDataset];
+      return baseDatasets;
+    }
+
+    function buildBoundaryAnnotations(selectedDatasets) {
+      const annotations = {};
+      const used = new Set();
+      let idx = 0;
+      for (const ds of selectedDatasets) {
+        for (const x of ds.dayBoundaryHours || []) {
+          const key = x.toFixed(8);
+          if (used.has(key)) continue;
+          used.add(key);
+          annotations[`dayLine_${idx++}`] = {
+            type: "line",
+            xMin: x,
+            xMax: x,
+            borderColor: "rgba(55, 65, 81, 0.8)",
+            borderWidth: 1.2,
+            drawTime: "beforeDatasetsDraw"
+          };
+        }
+      }
+      return annotations;
+    }
+
+    function getHourlyTickStep(maxHour) {
+      if (maxHour <= 24) return 1;
+      if (maxHour <= 48) return 2;
+      if (maxHour <= 96) return 4;
+      if (maxHour <= 168) return 6;
+      if (maxHour <= 336) return 12;
+      return 24;
+    }
+
+    function getDayBoundarySet(maxHour) {
+      const s = new Set([0]);
+      for (let h = 24; h <= maxHour; h += 24) s.add(h);
+      return s;
+    }
+
+    function buildExplicitTicks(maxHour, step) {
+      const tickValues = new Set([0]);
+      const maxInt = Math.max(0, Math.ceil(maxHour));
+      for (let h = 24; h <= maxInt; h += 24) tickValues.add(h);
+      for (let h = 0; h <= maxInt; h += step) tickValues.add(h);
+      return Array.from(tickValues).sort((a, b) => a - b).map(v => ({ value: v }));
+    }
+
+    function destroyCharts() {
+      if (cumulativeChart) { cumulativeChart.destroy(); cumulativeChart = null; }
+      if (hourlyChart) { hourlyChart.destroy(); hourlyChart = null; }
+      if (animatedCumulativeChart) { animatedCumulativeChart.destroy(); animatedCumulativeChart = null; }
+    }
+
+    function mapDatasetsForChart(datasets, options = {}) {
+      const { stepped = false, averageDashed = false } = options;
+      return datasets.map(ds => ({
+        label: ds.label,
+        data: ds.data,
+        parsing: false,
+        stepped,
+        tension: 0,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        borderWidth: ds.isAverage ? 3 : 2,
+        borderDash: ds.isAverage && averageDashed ? [10, 6] : [],
+        spanGaps: true,
+        borderColor: ds.color.stroke,
+        backgroundColor: ds.color.fill
+      }));
+    }
+
+    function buildAnimatedChartDataset(series, currentMinute) {
+      const currentHour = currentMinute / 60;
+      const points = [];
+      if (series.isAverage) {
+        for (const p of series.pointsMinutes) {
+          if (p.x <= currentMinute) points.push({ x: p.x / 60, y: p.y });
+          else break;
+        }
+        if (!points.length || points[points.length - 1].x < currentHour) {
+          points.push({ x: currentHour, y: getSeriesCountAtMinute(series, currentMinute) });
+        }
+      } else {
+        points.push({ x: 0, y: 0 });
+        for (let i = 0; i < series.eventMinutes.length; i++) {
+          const minute = series.eventMinutes[i];
+          if (minute <= currentMinute) points.push({ x: minute / 60, y: i + 1 });
+          else break;
+        }
+        if (points[points.length - 1].x < currentHour) {
+          points.push({ x: currentHour, y: getSeriesCountAtMinute(series, currentMinute) });
+        }
+      }
+      return {
+        label: series.label,
+        data: points,
+        parsing: false,
+        stepped: true,
+        tension: 0,
+        pointRadius: 0,
+        borderWidth: series.isAverage ? 3 : 2,
+        borderDash: series.isAverage ? [10, 6] : [],
+        borderColor: series.color.stroke,
+        backgroundColor: series.color.fill
+      };
+    }
+
+    function getAnimatedTickStep(maxHour) {
+      if (maxHour <= 12) return 1;
+      if (maxHour <= 24) return 2;
+      if (maxHour <= 72) return 6;
+      if (maxHour <= 168) return 12;
+      return 24;
+    }
+
+    function buildAnimatedAnnotations(currentMinute, datasets) {
+      const annotations = {};
+      const used = new Set();
+      let idx = 0;
+      for (const ds of datasets) {
+        for (const minute of ds.dayBoundaryMinutes || []) {
+          const x = minute / 60;
+          const key = x.toFixed(8);
+          if (used.has(key)) continue;
+          used.add(key);
+          annotations[`day_${idx++}`] = {
+            type: "line",
+            xMin: x,
+            xMax: x,
+            borderColor: "rgba(55,65,81,0.35)",
+            borderWidth: 1,
+            drawTime: "beforeDatasetsDraw"
+          };
+        }
+      }
+      annotations.currentTime = {
+        type: "line",
+        xMin: currentMinute / 60,
+        xMax: currentMinute / 60,
+        borderColor: "rgba(220, 38, 38, 0.95)",
+        borderWidth: 2,
+        drawTime: "afterDatasetsDraw"
+      };
+      return annotations;
+    }
+
+    function buildAnimationEventTimeline(datasets) {
+      const set = new Set([0]);
+
+      for (const ds of datasets) {
+        if (ds.isAverage) {
+          const pts = ds.pointsMinutes || [];
+          let prevY = null;
+          for (const p of pts) {
+            if (prevY === null || p.y !== prevY) {
+              set.add(p.x);
+              prevY = p.y;
+            }
+          }
+          continue;
+        }
+
+        for (const minute of ds.eventMinutes || []) {
+          set.add(minute);
+        }
+      }
+
+      return Array.from(set).sort((a, b) => a - b);
+    }
+
+    function findNextEventMinute(currentMinute) {
+      for (const minute of animationEventTimeline) {
+        if (minute > currentMinute + 1e-9) return minute;
+      }
+      return Number(timeSlider.max || 0);
+    }
+
+    function renderRanking(currentMinute) {
+      if (!currentAnimatedDatasets.length) {
+        rankingList.innerHTML = '<div class="empty">選択された GATE がありません。</div>';
+        return;
+      }
+      const rows = currentAnimatedDatasets.map(series => ({
+        label: series.label,
+        value: getSeriesCountAtMinute(series, currentMinute),
+        color: series.color,
+        isAverage: series.isAverage,
+        order: series.order ?? Number.MAX_SAFE_INTEGER
+      }));
+      rows.sort((a, b) => {
+        if (b.value !== a.value) return b.value - a.value;
+        if (a.order !== b.order) return a.order - b.order;
+        return a.label.localeCompare(b.label, "ja");
+      });
+
+      let gaugeBase = 500;
+      if (gaugeModeSelect.value === "relative") {
+        const actualMax = Math.max(0, ...rows.map(r => r.value));
+        gaugeBase = actualMax;
+      }
+
+      let previousValue = null;
+      let previousRank = 0;
+      rankingList.innerHTML = rows.map((row, idx) => {
+        const rank = previousValue !== null && row.value === previousValue ? previousRank : idx + 1;
+        previousValue = row.value;
+        previousRank = rank;
+        const width = gaugeBase <= 0 ? 0 : Math.max(0, Math.min(100, (row.value / gaugeBase) * 100));
+        const valueText = Number.isInteger(row.value) ? row.value : row.value.toFixed(2);
+        return `
+          <div class="ranking-item" style="--item-stroke:${escapeHtml(row.color.stroke)}; --item-fill:${escapeHtml(row.color.panelFill)};">
+            <div class="ranking-head">
+              <div class="rank-num">#${rank}</div>
+              <div class="rank-label">${escapeHtml(row.label)}</div>
+              <div class="rank-value">${valueText} 人</div>
+            </div>
+            <div class="bar-outer">
+              <div class="bar-inner" style="width:${width}%; background:${row.color.bar};"></div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function updateTimeDisplay(currentMinute) {
+      const rounded = Math.max(0, Math.round(Number(currentMinute) || 0));
+      currentTimeText.textContent = formatElapsedPreciseMinutes(rounded);
+      currentTimeSub.textContent = `開始から ${rounded}分`;
+      timeSliderValue.textContent = `${rounded}分`;
+    }
+
+    function updateAnimatedView() {
+      const currentMinute = clamp(animationCurrentMinute, 0, Number(timeSlider.max || 0));
+      animationCurrentMinute = currentMinute;
+      timeSlider.value = String(Math.round(currentMinute));
+      updateTimeDisplay(currentMinute);
+      renderRanking(currentMinute);
+      if (!animatedCumulativeChart) return;
+      animatedCumulativeChart.data.datasets = currentAnimatedDatasets.map(ds => buildAnimatedChartDataset(ds, currentMinute));
+      animatedCumulativeChart.options.plugins.annotation.annotations = buildAnimatedAnnotations(currentMinute, currentAnimatedDatasets);
+      animatedCumulativeChart.update("none");
+    }
+
+    function createAnimatedChart(datasets, maxMinute) {
+      const maxHour = maxMinute / 60;
+      const tickStep = getAnimatedTickStep(maxHour);
+      const explicitTicks = buildExplicitTicks(maxHour, tickStep);
+      const dayBoundaries = getDayBoundarySet(Math.ceil(maxHour));
+      animatedCumulativeChart = new Chart(document.getElementById("animatedCumulativeChart"), {
+        type: "line",
+        data: { datasets: datasets.map(ds => buildAnimatedChartDataset(ds, 0)) },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: "nearest", intersect: false },
+          plugins: {
+            legend: { position: "top" },
+            tooltip: {
+              callbacks: {
+                title(items) {
+                  if (!items.length) return "";
+                  return formatElapsedPrecise(items[0].parsed.x);
+                },
+                label(ctx) {
+                  const value = Number(ctx.parsed.y);
+                  const text = Number.isInteger(value) ? value : value.toFixed(2);
+                  return `${ctx.dataset.label}: ${text} 人`;
+                }
+              }
+            },
+            annotation: { annotations: buildAnimatedAnnotations(0, datasets) }
+          },
+          scales: {
+            x: {
+              type: "linear",
+              min: 0,
+              max: maxHour,
+              afterBuildTicks(scale) { scale.ticks = explicitTicks; },
+              title: { display: true, text: "経過時間" },
+              grid: { color: "rgba(209,213,219,0.35)" },
+              ticks: {
+                callback(value) {
+                  const rounded = Math.round(Number(value));
+                  if (Math.abs(Number(value) - rounded) > 1e-9) return "";
+                  if (dayBoundaries.has(rounded)) return formatTickLabel(rounded);
+                  if (rounded % tickStep === 0) return `${rounded % 24}時`;
+                  return "";
+                },
+                maxRotation: 35,
+                minRotation: 35,
+                autoSkip: false
+              }
+            },
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: "累積人数" }
+            }
+          }
+        }
+      });
+    }
+
+    function updateAnimationRange(maxMinute) {
+      const current = clamp(animationCurrentMinute, 0, maxMinute);
+      animationCurrentMinute = current;
+      timeSlider.max = String(maxMinute);
+      timeSlider.value = String(Math.round(current));
+      timeSliderValue.textContent = `${Math.round(current)}分`;
+    }
+
+    function renderCharts() {
+      const selectedItems = getSelectedItems();
+      destroyCharts();
+
+      if (selectedItems.length === 0) {
+        setStatus("選択された GATE がありません");
+        rankingList.innerHTML = '<div class="empty">選択された GATE がありません。</div>';
+        currentAnimatedDatasets = [];
+        updateAnimationRange(0);
+        updateTimeDisplay(0);
+        return;
+      }
+
+      const cumulativeBase = selectedItems.map(buildCumulativeDataset);
+      const hourlyBase = selectedItems.map(buildHourlyDataset);
+      const animatedBase = selectedItems.map(buildAnimatedSeries);
+
+      const cumulativeDatasets = buildDisplayDatasets(cumulativeBase, "平均", buildAverageCumulativeDataset);
+      const hourlyDatasets = buildDisplayDatasets(hourlyBase, "平均", buildAverageHourlyDataset);
+      const animatedDatasets = buildDisplayDatasets(animatedBase, "平均", buildAverageAnimatedSeries);
+
+      const cumulativeAnnotations = buildBoundaryAnnotations(cumulativeDatasets);
+      const hourlyAnnotations = buildBoundaryAnnotations(hourlyDatasets);
+
+      const maxHourlyHour = hourlyBase.reduce((acc, ds) => Math.max(acc, ds.maxHourIndex ?? 0), 0);
+      const hourlyTickStep = getHourlyTickStep(maxHourlyHour);
+      const hourlyDayBoundaries = getDayBoundarySet(maxHourlyHour);
+
+      const maxCumulativeHour = cumulativeDatasets.reduce((acc, ds) => Math.max(acc, ds.data.length ? ds.data[ds.data.length - 1].x : 0), 0);
+      const cumulativeTickStep = getHourlyTickStep(maxCumulativeHour);
+      const cumulativeDayBoundaries = getDayBoundarySet(Math.ceil(maxCumulativeHour));
+      const cumulativeExplicitTicks = buildExplicitTicks(maxCumulativeHour, cumulativeTickStep);
+
+      cumulativeChart = new Chart(document.getElementById("cumulativeChart"), {
+        type: "line",
+        data: { datasets: mapDatasetsForChart(cumulativeDatasets, { stepped: true, averageDashed: true }) },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: "nearest", intersect: false },
+          plugins: {
+            legend: { position: "top" },
+            tooltip: {
+              callbacks: {
+                title(items) {
+                  if (!items.length) return "";
+                  return formatElapsedPrecise(items[0].parsed.x);
+                },
+                label(ctx) {
+                  const value = Number(ctx.parsed.y);
+                  const text = Number.isInteger(value) ? value : value.toFixed(2);
+                  return `${ctx.dataset.label}: ${text} 人`;
+                }
+              }
+            },
+            annotation: { annotations: cumulativeAnnotations }
+          },
+          scales: {
+            x: {
+              type: "linear",
+              min: 0,
+              afterBuildTicks(scale) { scale.ticks = cumulativeExplicitTicks; },
+              title: { display: true, text: "経過時間" },
+              grid: { color: "rgba(209, 213, 219, 0.35)" },
+              ticks: {
+                callback(value) {
+                  const rounded = Math.round(Number(value));
+                  if (Math.abs(Number(value) - rounded) > 1e-9) return "";
+                  if (cumulativeDayBoundaries.has(rounded)) return formatTickLabel(rounded);
+                  if (rounded % cumulativeTickStep === 0) return `${rounded % 24}時`;
+                  return "";
+                },
+                maxRotation: 35,
+                minRotation: 35,
+                autoSkip: false
+              }
+            },
+            y: { beginAtZero: true, title: { display: true, text: "累積人数" } }
+          }
+        }
+      });
+
+      hourlyChart = new Chart(document.getElementById("hourlyChart"), {
+        type: "line",
+        data: { datasets: mapDatasetsForChart(hourlyDatasets, { stepped: false, averageDashed: true }) },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: "nearest", intersect: false },
+          plugins: {
+            legend: { position: "top" },
+            tooltip: {
+              callbacks: {
+                title(items) {
+                  if (!items.length) return "";
+                  const x = items[0].parsed.x;
+                  return `${formatElapsedFull(x)}〜${formatElapsedFull(x + 1)}`;
+                },
+                label(ctx) {
+                  const value = Number(ctx.parsed.y);
+                  const text = Number.isInteger(value) ? value : value.toFixed(2);
+                  return `${ctx.dataset.label}: ${text} 人`;
+                }
+              }
+            },
+            annotation: { annotations: hourlyAnnotations }
+          },
+          scales: {
+            x: {
+              type: "linear",
+              title: { display: true, text: "経過時間" },
+              grid: { color: "rgba(209, 213, 219, 0.2)" },
+              ticks: {
+                stepSize: hourlyTickStep,
+                callback(value) {
+                  const rounded = Math.round(Number(value));
+                  if (Math.abs(Number(value) - rounded) > 1e-9) return "";
+                  if (hourlyDayBoundaries.has(rounded)) return formatTickLabel(rounded);
+                  if (rounded % hourlyTickStep === 0) return `${rounded % 24}時`;
+                  return "";
+                },
+                maxRotation: 35,
+                minRotation: 35,
+                autoSkip: false
+              }
+            },
+            y: { beginAtZero: true, title: { display: true, text: "1時間ごとの人数" } }
+          }
+        }
+      });
+
+      currentAnimatedDatasets = animatedDatasets;
+      animationEventTimeline = buildAnimationEventTimeline(animatedDatasets);
+      animationTotalFrames = Math.max(1, animationEventTimeline.length - 1);
+      animationEventAccumulator = 0;
+      const maxMinute = Math.max(0, Math.ceil(animatedDatasets.reduce((acc, ds) => Math.max(acc, ds.maxMinute || 0), 0)));
+      updateAnimationRange(maxMinute);
+      createAnimatedChart(animatedDatasets, maxMinute);
+      updateAnimatedView();
+
+      const avgText = averageOnlyCheckbox.checked ? "平均のみ表示" : (showAverageCheckbox.checked ? "平均あり" : "平均なし");
+      setStatus(`${selectedItems.length} 件を描画しました (${avgText})`);
+    }
+
+    function sliderToSpeed(value) {
+      return Math.pow(10, Number(value) / 20);
+    }
+
+    function updateSpeedLabel() {
+      const speed = sliderToSpeed(speedSlider.value);
+      speedSliderValue.textContent = `${speed.toFixed(1)} 倍速`;
+    }
+
+    function stopAnimation() {
+      isPlaying = false;
+      lastFrameTs = null;
+      animationEventAccumulator = 0;
+      playPauseButton.textContent = "再生";
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+    }
+
+    function startAnimation() {
+      if (Number(timeSlider.max) <= 0) return;
+      animationEventAccumulator = 0;
+      isPlaying = true;
+      playPauseButton.textContent = "停止";
+      lastFrameTs = null;
+      if (animationFrameId === null) animationFrameId = requestAnimationFrame(tickAnimation);
+    }
+
+    function tickAnimation(ts) {
+      if (!isPlaying) {
+        animationFrameId = null;
+        return;
+      }
+      if (lastFrameTs == null) lastFrameTs = ts;
+      const deltaMs = ts - lastFrameTs;
+      lastFrameTs = ts;
+      const speed = sliderToSpeed(speedSlider.value);
+      const maxMinute = Number(timeSlider.max || 0);
+
+      if (timeModeSelect.value === "event") {
+        const framesPerSecond = (animationTotalFrames / 60) * speed;
+        animationEventAccumulator += (deltaMs / 1000) * framesPerSecond;
+        while (animationEventAccumulator >= 1 - 1e-12) {
+          animationEventAccumulator -= 1;
+          const nextEventMinute = findNextEventMinute(animationCurrentMinute);
+          if (nextEventMinute <= animationCurrentMinute + 1e-9) {
+            animationCurrentMinute = maxMinute;
+            updateAnimatedView();
+            stopAnimation();
+            return;
+          }
+          animationCurrentMinute = nextEventMinute;
+          if (animationCurrentMinute >= maxMinute - 1e-9) {
+            animationCurrentMinute = maxMinute;
+            updateAnimatedView();
+            stopAnimation();
+            return;
+          }
+        }
+      } else {
+        const next = animationCurrentMinute + (deltaMs / 1000) * speed * 60;
+        if (next >= maxMinute) {
+          animationCurrentMinute = maxMinute;
+          updateAnimatedView();
+          stopAnimation();
+          return;
+        }
+        animationCurrentMinute = next;
+      }
+
+      updateAnimatedView();
+      animationFrameId = requestAnimationFrame(tickAnimation);
+    }
+
+    function setActiveTab(name) {
+      for (const btn of tabButtons) {
+        btn.classList.toggle("active", btn.dataset.tab === name);
+      }
+      for (const panel of tabPanels) {
+        panel.classList.toggle("active", panel.id === `tab-${name}`);
+      }
+      if (name === "cumulative" && cumulativeChart) cumulativeChart.resize();
+      if (name === "hourly" && hourlyChart) hourlyChart.resize();
+      if (name === "animation" && animatedCumulativeChart) animatedCumulativeChart.resize();
+    }
+
+    async function loadAll() {
+      stopAnimation();
+      setStatus("index.json を読み込み中...");
+      destroyCharts();
+      checkboxList.innerHTML = "";
+      try {
+        const indexJson = await fetchJson(INDEX_PATH);
+        if (!Array.isArray(indexJson)) throw new Error("json/index.json は配列形式である必要があります。");
+        const indexEntries = indexJson.map(parseIndexEntry);
+        setStatus("各 JSON を読み込み中...");
+        loadedItems = await Promise.all(indexEntries.map(async (entry, idx) => {
+          const path = entry.file.startsWith("json/") ? entry.file : `json/${entry.file}`;
+          const raw = await fetchJson(path);
+          const startDate = new Date(raw.start);
+          if (Number.isNaN(startDate.getTime())) throw new Error(`${path} の start が不正です。`);
+          const timestamps = Array.isArray(raw.timestamps)
+            ? raw.timestamps.map(s => new Date(s)).filter(d => !Number.isNaN(d.getTime()))
+            : [];
+          const gate = raw.gate ?? "?";
+          const song = raw.song ?? "?";
+          const colorCode = typeof raw.color === "string" ? raw.color : null;
+          return {
+            file: entry.file,
+            order: extractFileOrder(entry.file) * 1000 + idx,
+            gate,
+            song,
+            start: raw.start,
+            startDate,
+            startDateLabel: formatStartDateOnly(startDate),
+            timestamps,
+            label: formatLegendLabel({ gate, song }),
+            colorCode,
+            color: buildColorTheme(colorCode, idx)
+          };
+        }));
+        buildCheckboxes(loadedItems);
+        renderCharts();
+      } catch (err) {
+        console.error(err);
+        checkboxList.innerHTML = `<div class="empty">読み込みに失敗しました。<br>${escapeHtml(err.message || String(err))}</div>`;
+        rankingList.innerHTML = '<div class="empty">読み込みに失敗しました。</div>';
+        setStatus("読み込み失敗");
+      }
+    }
+
+    reloadButton.addEventListener("click", loadAll);
+    selectAllButton.addEventListener("click", () => {
+      document.querySelectorAll(".json-checkbox").forEach(el => { el.checked = true; });
+      renderCharts();
+    });
+    clearButton.addEventListener("click", () => {
+      document.querySelectorAll(".json-checkbox").forEach(el => { el.checked = false; });
+      renderCharts();
+    });
+    checkboxList.addEventListener("change", e => {
+      if (e.target.classList.contains("json-checkbox")) renderCharts();
+    });
+    showAverageCheckbox.addEventListener("change", () => {
+      if (!showAverageCheckbox.checked && averageOnlyCheckbox.checked) averageOnlyCheckbox.checked = false;
+      renderCharts();
+    });
+    averageOnlyCheckbox.addEventListener("change", () => {
+      if (averageOnlyCheckbox.checked) showAverageCheckbox.checked = true;
+      renderCharts();
+    });
+    timeSlider.addEventListener("input", () => {
+      animationCurrentMinute = Number(timeSlider.value || 0);
+      updateAnimatedView();
+    });
+    speedSlider.addEventListener("input", updateSpeedLabel);
+    gaugeModeSelect.addEventListener("change", () => updateAnimatedView());
+    timeModeSelect.addEventListener("change", () => {
+      animationEventAccumulator = 0;
+      updateAnimatedView();
+    });
+    playPauseButton.addEventListener("click", () => {
+      if (isPlaying) stopAnimation();
+      else startAnimation();
+    });
+    resetTimeButton.addEventListener("click", () => {
+      stopAnimation();
+      animationCurrentMinute = 0;
+      updateAnimatedView();
+    });
+    tabButtons.forEach(btn => btn.addEventListener("click", () => setActiveTab(btn.dataset.tab)));
+
+    updateSpeedLabel();
+    animationCurrentMinute = 0;
+    updateTimeDisplay(0);
+    loadAll();
+  </script>
+</body>
+</html>
