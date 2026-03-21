@@ -762,11 +762,6 @@
       };
     }
 
-    function extractFileOrder(fileName) {
-      const m = String(fileName || "").match(/(\d+)/);
-      return m ? Number(m[1]) : Number.MAX_SAFE_INTEGER;
-    }
-
     function buildAnimatedSeries(item) {
       const startMs = item.startDate.getTime();
       const eventMinutes = item.timestamps
@@ -1072,23 +1067,50 @@
       return Number(timeSlider.max || 0);
     }
 
+    function getReachedMinuteForValue(series, value) {
+      if (!(value > 0)) return 0;
+      if (series.isAverage) {
+        for (const p of series.pointsMinutes || []) {
+          if (p.y >= value - 1e-9) return p.x;
+        }
+        return Number.MAX_SAFE_INTEGER;
+      }
+      const index = Math.ceil(value) - 1;
+      return index >= 0 && index < (series.eventMinutes || []).length
+        ? series.eventMinutes[index]
+        : Number.MAX_SAFE_INTEGER;
+    }
+
     function renderRanking(currentMinute) {
       if (!currentAnimatedDatasets.length) {
         rankingList.innerHTML = '<div class="empty">選択された GATE がありません。</div>';
         return;
       }
-      const rows = currentAnimatedDatasets.map(series => ({
-        label: series.label,
-        value: getSeriesCountAtMinute(series, currentMinute),
-        color: series.color,
-        isAverage: series.isAverage,
-        order: series.order ?? Number.MAX_SAFE_INTEGER
-      }));
-      rows.sort((a, b) => {
-        if (b.value !== a.value) return b.value - a.value;
-        if (a.order !== b.order) return a.order - b.order;
-        return a.label.localeCompare(b.label, "ja");
+      const rows = currentAnimatedDatasets.map(series => {
+        const value = getSeriesCountAtMinute(series, currentMinute);
+        return {
+          label: series.label,
+          value,
+          color: series.color,
+          isAverage: series.isAverage,
+          order: series.order ?? Number.MAX_SAFE_INTEGER,
+          reachedMinute: getReachedMinuteForValue(series, value)
+        };
       });
+
+      if (currentMinute <= 0) {
+        rows.sort((a, b) => {
+          if (a.order !== b.order) return a.order - b.order;
+          return a.label.localeCompare(b.label, "ja");
+        });
+      } else {
+        rows.sort((a, b) => {
+          if (b.value !== a.value) return b.value - a.value;
+          if (a.reachedMinute !== b.reachedMinute) return a.reachedMinute - b.reachedMinute;
+          if (a.order !== b.order) return a.order - b.order;
+          return a.label.localeCompare(b.label, "ja");
+        });
+      }
 
       let gaugeBase = 500;
       if (gaugeModeSelect.value === "relative") {
@@ -1459,7 +1481,7 @@
           const colorCode = typeof raw.color === "string" ? raw.color : null;
           return {
             file: entry.file,
-            order: extractFileOrder(entry.file) * 1000 + idx,
+            order: idx,
             gate,
             song,
             start: raw.start,
