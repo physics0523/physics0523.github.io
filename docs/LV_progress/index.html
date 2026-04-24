@@ -354,7 +354,7 @@
 
       <div class="extra-options">
         <label class="toggle">
-          <input id="showAverageCheckbox" type="checkbox" checked>
+          <input id="showAverageCheckbox" type="checkbox">
           <span>平均を追加</span>
         </label>
         <label class="toggle">
@@ -649,7 +649,7 @@
         return;
       }
       checkboxList.innerHTML = items.map((item, idx) => {
-        const checked = idx === 0 ? "checked" : "";
+        const checked = "checked";
         return `
           <label class="checkbox-item" style="--item-stroke:${escapeHtml(item.color.stroke)}; --item-fill:${escapeHtml(item.color.panelFill)};">
             <input type="checkbox" class="json-checkbox" value="${escapeHtml(item.file)}" ${checked}>
